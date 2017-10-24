@@ -27,4 +27,14 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function friends()
+    {
+        return $this->hasMany('App\Friend', 'user_id', 'id');
+    }
+
+    public function friendRequests()
+    {
+        return $this->hasMany('App\Friend', 'owner_id', 'id');
+    }
 }
