@@ -27,4 +27,18 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function friends()
+    {
+        return Friend::where([
+            'user_id' => $this->id
+        ])->get();
+    }
+
+    public function friendRequests()
+    {
+        return FriendRequest::where([
+            'owner_id' => $this->id
+        ])->get();
+    }
 }
