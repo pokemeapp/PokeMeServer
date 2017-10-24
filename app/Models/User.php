@@ -30,15 +30,11 @@ class User extends Authenticatable
 
     public function friends()
     {
-        return Friend::where([
-            'user_id' => $this->id
-        ])->get();
+        return $this->hasMany('App\Friend', 'user_id', 'id');
     }
 
     public function friendRequests()
     {
-        return FriendRequest::where([
-            'owner_id' => $this->id
-        ])->get();
+        return $this->hasMany('App\Friend', 'owner_id', 'id');
     }
 }
