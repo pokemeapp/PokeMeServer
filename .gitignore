@@ -91,3 +91,5 @@ fabric.properties
 .history
 
 # End of https://www.gitignore.io/api/laravel,phpstorm+all,visualstudiocode
+
+./storage/api-docs

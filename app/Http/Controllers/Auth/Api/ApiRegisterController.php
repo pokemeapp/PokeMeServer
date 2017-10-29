@@ -29,6 +29,33 @@ class ApiRegisterController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Post(
+     *   path="/api/register",
+     *   summary="Register a new user",
+     *   operationId="register",
+     *   @SWG\Parameter(name="firstname", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Parameter(name="lastname", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Parameter(name="email", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Parameter(name="password", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Response(response=201, description="The user has been registered successfully!"),
+     *   @SWG\Response(response=400, description="Validation unsuccessful.", examples={
+     *     "application/json": {
+     *       "lastname": {
+     *          "The lastname field is required."
+     *       },
+     *       "email": {
+     *          "The email field is required."
+     *       },
+     *       "password": {
+     *          "The password field is required."
+     *       },
+     *       "firstname": {
+     *          "The firstname field is required."
+     *       }
+     *     }
+     *   })
+     * )
      */
     public function register(Request $request)
     {
@@ -63,6 +90,22 @@ class ApiRegisterController extends Controller
         ]);
     }
 
+     /**
+     * @SWG\Post(
+     *   path="/api/forgot_password",
+     *   summary="Sends a forgot password email.",
+     *   operationId="forgot_password",
+     *   @SWG\Parameter(name="email", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Response(response=200, description=""),
+     *   @SWG\Response(response=400, description="Validation unsuccessful.", examples={
+     *     "application/json": {
+     *       "email": {
+     *          "The email field is required."
+     *       },
+     *     }
+     *   })
+     * )
+     */
     public function forgot_password(Request $request)
     {
         $this->sendResetLinkEmail($request);

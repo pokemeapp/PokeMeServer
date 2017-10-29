@@ -1,0 +1,265 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Poke.me API",
+        "version": "1.0.0"
+    },
+    "basePath": "/",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/api/user": {
+            "get": {
+                "summary": "Return the currently authenticated user",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "examples": {
+                            "application/json": {
+                                "id": 1,
+                                "firstname": "Lajos",
+                                "lastname": "Kovcs",
+                                "email": "lajos.kovacs@innonic.com",
+                                "created_at": "2017-10-17 21:02:54",
+                                "updated_at": "2017-10-18 19:30:43"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "examples": {
+                            "application/json": {
+                                "message": "Unauthenticated."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/friend_requests": {
+            "get": {
+                "summary": "List friend requests of the authenticated user",
+                "operationId": "getCurrentUserFriendRequests",
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "examples": {
+                            "application/json": [
+                                {
+                                    "id": 3,
+                                    "owner_id": 2,
+                                    "target_id": 1,
+                                    "status": 0,
+                                    "created_at": "2017-10-29 14:02:19",
+                                    "updated_at": "2017-10-29 14:02:21",
+                                    "owner": {
+                                        "id": 2,
+                                        "firstname": "Kelemen",
+                                        "lastname": "Kabatan",
+                                        "email": "kelemen.kabatban@innonic.com",
+                                        "created_at": "2017-10-24 17:05:23",
+                                        "updated_at": "2017-10-24 17:05:25"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "examples": {
+                            "application/json": {
+                                "message": "Unauthenticated."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/friends": {
+            "get": {
+                "summary": "List friends of the authenticated user",
+                "operationId": "getCurrentUserFriends",
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "examples": {
+                            "application/json": [
+                                {
+                                    "id": 3,
+                                    "user_id": 1,
+                                    "friend_id": 2,
+                                    "created_at": "2017-10-29 14:02:19",
+                                    "updated_at": "2017-10-29 14:02:21",
+                                    "owner": {
+                                        "id": 2,
+                                        "firstname": "Kelemen",
+                                        "lastname": "Kabatan",
+                                        "email": "kelemen.kabatban@innonic.com",
+                                        "created_at": "2017-10-24 17:05:23",
+                                        "updated_at": "2017-10-24 17:05:25"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "examples": {
+                            "application/json": {
+                                "message": "Unauthenticated."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/friend_request/{id}/accept": {
+            "post": {
+                "summary": "Accept a friend request",
+                "operationId": "acceptFriendRequest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "number"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully accepted request."
+                    },
+                    "400": {
+                        "description": "Not Found",
+                        "examples": {
+                            "application/json": {
+                                "message": "There is no request with the given id: 1"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/friend_request/{id}/decline": {
+            "post": {
+                "summary": "Decline a friend request",
+                "operationId": "acceptFriendRequest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "number"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully accepted request."
+                    },
+                    "400": {
+                        "description": "Not Found",
+                        "examples": {
+                            "application/json": {
+                                "message": "There is no request with the given id: 1"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/register": {
+            "post": {
+                "summary": "Register a new user",
+                "operationId": "register",
+                "parameters": [
+                    {
+                        "name": "firstname",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "lastname",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "The user has been registered successfully!"
+                    },
+                    "400": {
+                        "description": "Validation unsuccessful.",
+                        "examples": {
+                            "application/json": {
+                                "lastname": [
+                                    "The lastname field is required."
+                                ],
+                                "email": [
+                                    "The email field is required."
+                                ],
+                                "password": [
+                                    "The password field is required."
+                                ],
+                                "firstname": [
+                                    "The firstname field is required."
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/forgot_password": {
+            "post": {
+                "summary": "Sends a forgot password email.",
+                "operationId": "forgot_password",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Validation unsuccessful.",
+                        "examples": {
+                            "application/json": {
+                                "email": [
+                                    "The email field is required."
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {}
+}
