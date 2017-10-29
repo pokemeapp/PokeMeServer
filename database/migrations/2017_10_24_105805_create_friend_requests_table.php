@@ -19,7 +19,7 @@ class CreateFriendRequestsTable extends Migration
             $table->foreign('owner_id')->references('id')->on('users');
             $table->integer('target_id')->unsigned();
             $table->foreign('target_id')->references('id')->on('users');
-            $table->boolean('status');
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }
