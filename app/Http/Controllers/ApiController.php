@@ -8,7 +8,17 @@
 
 namespace App\Http\Controllers;
 
-
+/**
+ * @SWG\Swagger(
+ *   basePath="/",
+ *   produces={"application/json"},
+ *   consumes={"application/json"},
+ *   @SWG\Info(
+ *     title="Poke.me API",
+ *     version="1.0.0"
+ *   )
+ * )
+ */
 class ApiController extends Controller
 {
     /**
