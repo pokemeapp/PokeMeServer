@@ -28,6 +28,8 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+
+
     public function friends()
     {
         return $this->hasMany('App\Friend', 'user_id', 'id');
@@ -36,5 +38,10 @@ class User extends Authenticatable
     public function friendRequests()
     {
         return $this->hasMany('App\FriendRequest', 'target_id', 'id');
+    }
+
+    public static function findForPassport($username)
+    {
+        return User::where('email', $username)->first();
     }
 }
