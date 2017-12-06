@@ -33,8 +33,28 @@ class User extends Authenticatable
         return $this->hasMany('App\Friend', 'user_id', 'id');
     }
 
+    public function device_tokens()
+    {
+        return $this->hasMany('App\DeviceToken', 'user_id', 'id');
+    }
+
     public function friendRequests()
     {
         return $this->hasMany('App\FriendRequest', 'target_id', 'id');
+    }
+
+    /**
+     * @param $query
+     * @param $search
+     * @return mixed
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function($query) use ($search)
+        {
+            $query->where('firstname', 'LIKE', "%$search%")
+                ->orWhere('lastname', 'LIKE', "%$search%")
+                ->orWhere('email', 'LIKE', "%$search%");
+        });
     }
 }

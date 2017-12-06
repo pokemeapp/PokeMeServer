@@ -16,6 +16,30 @@ use Illuminate\Validation\Rule;
  */
 class FriendRequestController extends ApiController
 {
+    /**
+     * @SWG\Post(
+     *   path="/api/user/friend_request",
+     *   summary="Send a friend request",
+     *   operationId="createFriendRequest",
+     *   @SWG\Parameter(name="user_id", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Response(response=200, description="The request sent to the user!"),
+     *   @SWG\Response(response=400, description="Validation unsuccessful.", examples={
+     *     "application/json": {
+     *       "user_id": {
+     *          "The user_id field is required."
+     *       },
+     *
+     *       "user_id": {
+     *          "The friend request already exists for the target user."
+     *       },
+     *
+     *       "user_id": {
+     *          "The user already requested a request to you. Check your friend requests!"
+     *       },
+     *     }
+     *   })
+     * )
+     */
     public function post(Request $request)
     {
         $currentUserId = $request->user()->id;
@@ -49,7 +73,7 @@ class FriendRequestController extends ApiController
         }
 
         $this->createFriendRequest($request->user(),$request->all());
-        return \response()->json("The request sent to the user!",Response::HTTP_CREATED);
+        return \response()->json("The request sent to the user!",Response::HTTP_OK);
     }
 
     private function isFriendRequestAlreadyExists(User $user, array $data)
