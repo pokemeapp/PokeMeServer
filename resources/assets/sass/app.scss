@@ -1,11 +1,28 @@
 
 // Fonts
 @import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600");
+@import url("https://fonts.googleapis.com/css?family=Lato");
+@import url("https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900");
+@import url("https://fonts.googleapis.com/css?family=Muli");
 
-// Variables
-@import "variables";
+@import "~font-awesome/scss/font-awesome";
+@import "~simple-line-icons/scss/simple-line-icons";
 
 // Bootstrap
-@import "~bootstrap-sass/assets/stylesheets/bootstrap";
+@import "~bootstrap/scss/bootstrap";
 
-@import "general";
+
+@import "device-mockups/device-mockups.min.css";
+
+
+@import "variables";
+@import "mixins";
+@import "global";
+@import "navbar";
+@import "masthead";
+@import "download";
+@import "features";
+@import "cta";
+@import "contact";
+@import "footer";
+@import "bootstrap-overrides";
