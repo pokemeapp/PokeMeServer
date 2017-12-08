@@ -5,14 +5,13 @@
 @import url("https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900");
 @import url("https://fonts.googleapis.com/css?family=Muli");
 
+$fa-font-path: "//netdna.bootstrapcdn.com/font-awesome/4.7.0/fonts";
+$simple-line-font-path: "//cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/fonts/";
 @import "~font-awesome/scss/font-awesome";
 @import "~simple-line-icons/scss/simple-line-icons";
 
 // Bootstrap
 @import "~bootstrap/scss/bootstrap";
-
-
-@import "device-mockups/device-mockups.min.css";
 
 
 @import "variables";
