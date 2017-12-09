@@ -34,6 +34,7 @@ class ApiRegisterController extends Controller
      *   path="/api/register",
      *   summary="Register a new user",
      *   operationId="register",
+     *   tags={"authentication"},
      *   @SWG\Parameter(name="firstname", in="body", @SWG\Schema(type="string")),
      *   @SWG\Parameter(name="lastname", in="body", @SWG\Schema(type="string")),
      *   @SWG\Parameter(name="email", in="body", @SWG\Schema(type="string")),
@@ -95,6 +96,7 @@ class ApiRegisterController extends Controller
      *   path="/api/forgot_password",
      *   summary="Sends a forgot password email.",
      *   operationId="forgot_password",
+     *   tags={"authentication"},
      *   @SWG\Parameter(name="email", in="body", @SWG\Schema(type="string")),
      *   @SWG\Response(response=200, description=""),
      *   @SWG\Response(response=400, description="Validation unsuccessful.", examples={

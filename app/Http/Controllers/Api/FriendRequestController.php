@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\DeviceToken;
+use App\Friend;
 use App\FriendRequest;
+use App\Mail\FriendRequestSent;
 use App\User;
+use Bnb\PushNotifications\Device;
+use Bnb\PushNotifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -18,10 +24,11 @@ class FriendRequestController extends ApiController
 {
     /**
      * @SWG\Post(
-     *   path="/api/user/friend_request",
+     *   path="/api/users/{userId}/send_request",
      *   summary="Send a friend request",
-     *   operationId="createFriendRequest",
-     *   @SWG\Parameter(name="user_id", in="body", @SWG\Schema(type="string")),
+     *   operationId="post",
+     *   tags={"friend_request"},
+     *   @SWG\Parameter(name="userId", in="path", type="string"),
      *   @SWG\Response(response=200, description="The request sent to the user!"),
      *   @SWG\Response(response=400, description="Validation unsuccessful.", examples={
      *     "application/json": {
@@ -40,67 +47,70 @@ class FriendRequestController extends ApiController
      *   })
      * )
      */
-    public function post(Request $request)
+    public function post(Request $request, $userId)
     {
         $currentUserId = $request->user()->id;
-        $userIds = User::select('id')->where('id' ,'>' ,0)->get('id')->pluck('id')->toArray();
-        $userIds = array_diff($userIds, array($currentUserId));
 
-        /** @var $validator \Illuminate\Validation\Validator */
-        $validator = Validator::make($request->all(), [
-            'user_id' => [
-                'required',
-                Rule::in($userIds)
-            ]
-        ]);
+        $user = User::findOrFail($userId);
 
-        if ($validator->fails()) {
-            return \response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
-        }
-
-        if ($this->isFriendRequestAlreadyExists($request->user(),$request->all())) {
+        if ($this->isFriendRequestAlreadyExists($currentUserId, $userId)) {
             return \response()->json(
                 "The friend request already exists for the target user.",
                 Response::HTTP_BAD_REQUEST
             );
         }
 
-        if ($this->isFriendRequestAlreadyExistsFromOtherSide($request->user(),$request->all())) {
+        if ($this->isFriendRequestAlreadyExistsFromOtherSide($currentUserId, $userId)) {
             return \response()->json(
                 "The user already requested a request to you. Check your friend requests!",
                 Response::HTTP_BAD_REQUEST
             );
         }
 
-        $this->createFriendRequest($request->user(),$request->all());
+        $this->createFriendRequest($request->user(), $userId);
         return \response()->json("The request sent to the user!",Response::HTTP_OK);
     }
 
-    private function isFriendRequestAlreadyExists(User $user, array $data)
+    private function isFriendRequestAlreadyExists($currentUserId, $targetId)
     {
         return FriendRequest::where([
-            'owner_id' => $user->id,
-            'target_id' => $data['user_id']
+            'owner_id' => $currentUserId,
+            'target_id' => $targetId
         ])->get()->isNotEmpty();
     }
 
-    private function isFriendRequestAlreadyExistsFromOtherSide(User $user, array $data)
+    private function isFriendRequestAlreadyExistsFromOtherSide($currentUserId, $targetId)
     {
         return FriendRequest::where([
-            'owner_id' => $data['user_id'],
-            'target_id' => $user->id
+            'owner_id' => $targetId,
+            'target_id' => $currentUserId
         ])->get()->isNotEmpty();
     }
 
-    private function createFriendRequest(User $user, array $data)
+    private function createFriendRequest(User $user, $targetId)
     {
         $friendRequest = new FriendRequest();
         $friendRequest->owner_id = $user->id;
-        $friendRequest->target_id = $data['user_id'];
+        $friendRequest->target_id = $targetId;
         $friendRequest->status = false;
-
         $friendRequest->save();
-        //TODO: Send friend request email for target user
-        //TODO: Send push notification for target user
+
+
+        //TODO: Reafctor into EVENT
+        /** @var User $target */
+        $target = User::findOrFail($targetId);
+        $target = User::findOrFail($targetId);
+        $targetDeviceTokens = $target->device_tokens()->get();
+
+        Mail::to($target->email)->send(new FriendRequestSent());
+
+        $notification = new Notification("New Friend Request", "You have a new Friend Request from " . $user->fullName());
+        $notification->metadata('friend_request_id', $friendRequest->id);
+
+        /** @var DeviceToken $token */
+        foreach ($targetDeviceTokens as $token) {
+            $notification->push(Device::apns($token->token));
+        }
+        $results = $notification->send();
     }
 }

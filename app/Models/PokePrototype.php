@@ -10,4 +10,11 @@ class PokePrototype extends Model
     {
         return $this->hasOne('App\User', 'id', 'owner_id');
     }
+
+    public function validateOwnership($userId)
+    {
+        if ($this->owner_id != $userId) {
+            throw new \Exception('You are not the owner of that poke prototype.');
+        }
+    }
 }

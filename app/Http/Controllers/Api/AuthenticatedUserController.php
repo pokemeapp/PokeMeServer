@@ -23,6 +23,7 @@ class AuthenticatedUserController extends ApiController
      *   path="/api/user",
      *   summary="Return the currently authenticated user",
      *   operationId="getCurrentUser",
+     *   tags={"currentUser"},
      *   @SWG\Response(response=200, description="successful operation", examples={
      *     "application/json": {
      *      "id": 1,
@@ -53,6 +54,7 @@ class AuthenticatedUserController extends ApiController
      *   path="/api/user",
      *   summary="Update the current user",
      *   operationId="update",
+     *   tags={"currentUser"},
      *   @SWG\Parameter(name="firstname", in="body", @SWG\Schema(type="string")),
      *   @SWG\Parameter(name="lastname", in="body", @SWG\Schema(type="string")),
      *   @SWG\Parameter(name="email", in="body", @SWG\Schema(type="string")),
@@ -110,6 +112,7 @@ class AuthenticatedUserController extends ApiController
      *   path="/api/user/add_device_token",
      *   summary="Adding a new device token to the user",
      *   operationId="addDeviceToken",
+     *   tags={"currentUser"},
      *   @SWG\Parameter(name="token", in="body", @SWG\Schema(type="string")),
      *   @SWG\Response(response=200, description="Successfully added token.")
      * )
@@ -129,7 +132,7 @@ class AuthenticatedUserController extends ApiController
 
         /** @var Collection $tokens */
         $tokens = DeviceToken::where('user_id', $request->user()->id)
-            ->andWhere('token', $request->get('token'))
+            ->where('token', $request->get('token'))
             ->get();
         if ($tokens->isEmpty()) {
             $new_token = new DeviceToken();
@@ -146,6 +149,7 @@ class AuthenticatedUserController extends ApiController
      *   path="/api/user/friend_requests",
      *   summary="List friend requests of the authenticated user",
      *   operationId="getCurrentUserFriendRequests",
+     *   tags={"currentUser"},
      *   @SWG\Response(response=200, description="successful operation", examples={
      *     "application/json": {
      *      {
@@ -183,6 +187,7 @@ class AuthenticatedUserController extends ApiController
      *   path="/api/user/friends",
      *   summary="List friends of the authenticated user",
      *   operationId="getCurrentUserFriends",
+     *   tags={"currentUser"},
      *   @SWG\Response(response=200, description="successful operation", examples={
      *     "application/json": {
      *      {
@@ -215,10 +220,62 @@ class AuthenticatedUserController extends ApiController
     }
 
     /**
+     * @SWG\Delete(
+     *   path="/api/user/friends/{friendId}",
+     *   summary="Delete friend",
+     *   operationId="deleteFriend",
+     *   tags={"currentUser"},
+     *   @SWG\Parameter(name="friendId", in="query", type="string"),
+     *   @SWG\Response(response=200, description="Friend deleted successfully!", examples={
+     *     "application/json": {
+     *       "message"="Friend deleted successfully",
+     *     }
+     *   }),
+     *
+     *   @SWG\Response(response=400, description="Not friend", examples={
+     *     "application/json": {
+     *       "message"="The user is not your friend!",
+     *     }
+     *   }),
+     *   @SWG\Response(response=401, description="Unauthenticated", examples={
+     *     "application/json": {
+     *       "message"="Unauthenticated.",
+     *     }
+     *   })
+     * )
+     */
+    public function deleteFriend(Request $request, $friendId)
+    {
+        $currentUserId = $request->user()->id;
+
+        /**
+         * @var Friend $friend
+         */
+        $friend = Friend::where([
+            'user_id' => $currentUserId,
+            'friend_id' => $friendId
+        ])->first();
+
+
+        if ($friend == null) {
+            return \response()->json(
+                "The user is not your friend!",
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $friend->deleteFriendship();
+        //TODO: push notification for target user about deletion.
+
+        return \response()->json("Friend deleted successfully!",Response::HTTP_OK);
+    }
+
+    /**
      * @SWG\Post(
-     *   path="/api/user/friend_requests/{id}/accept",
+     *   path="/api/user/friend_requests/{request_id}/accept",
      *   summary="Accept a friend request",
      *   operationId="acceptFriendRequest",
+     *   tags={"friend_request"},
      *   @SWG\Parameter(name="id", in="path", type="number"),
      *   @SWG\Response(response=200, description="Successfully accepted request."),
      *   @SWG\Response(response=400, description="Not Found", examples={
@@ -238,9 +295,10 @@ class AuthenticatedUserController extends ApiController
 
     /**
      * @SWG\Post(
-     *   path="/api/user/friend_requests/{id}/decline",
+     *   path="/api/user/friend_requests/{request_id}/decline",
      *   summary="Decline a friend request",
      *   operationId="acceptFriendRequest",
+     *   tags={"friend_request"},
      *   @SWG\Parameter(name="id", in="path", type="number"),
      *   @SWG\Response(response=200, description="Successfully accepted request."),
      *   @SWG\Response(response=400, description="Not Found", examples={

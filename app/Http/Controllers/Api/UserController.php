@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 
 
 /**
@@ -18,26 +19,22 @@ class UserController extends ApiController
 {
     /**
      * @SWG\Get(
-     *   path="/api/usersearch",
+     *   path="/api/users/search",
      *   summary="Search for users by given query",
      *   operationId="searchUser",
+     *   tags={"friend_request"},
+     *   @SWG\Parameter(name="query", in="query", type="string"),
      *   @SWG\Response(response=200, description="successful operation", examples={
      *     "application/json": {
      *      {
      *      "id": 1,
      *      "firstname": "Lajos",
      *      "lastname": "Kovcs",
-     *      "email": "lajos.kovacs@innonic.com",
-     *      "created_at": "2017-10-17 21:02:54",
-     *      "updated_at": "2017-10-18 19:30:43"
      *      },
      *      {
      *      "id": 2,
      *      "firstname": "Kelemen",
      *      "lastname": "Tenkes",
-     *      "email": "tenkes.kelemen@asd.com",
-     *      "created_at": "2017-10-17 21:02:54",
-     *      "updated_at": "2017-10-18 19:30:43"
      *      }
      *     }
      *   }),
@@ -66,13 +63,44 @@ class UserController extends ApiController
             return \response()->json($validator->errors(), Response::HTTP_METHOD_NOT_ALLOWED);
         }
 
-        /** TODO: Refactor this! */
-
         $data = $request->all();
 
-        $users = User::search($data['query'])->get();
+        $users = User::search($data['query'])->get(['id', 'firstname', 'lastname']);
 
         /** @var Collection $users */
         return $users;
+    }
+
+    /**
+     * @SWG\Get(
+     *   path="/api/users/{userId}",
+     *   summary="Get user object by user id",
+     *   operationId="getUser",
+     *   tags={"friend_request"},
+     *   @SWG\Parameter(name="userId", in="path", type="string"),
+     *   @SWG\Response(response=200, description="successful operation", examples={
+     *     "application/json": {
+     *      {
+     *      "id": 1,
+     *      "firstname": "Lajos",
+     *      "lastname": "Kovcs",
+     *      "email": "example@example.com",
+     *      "created_at": "2017-10-17 21:02:54",
+     *      "updated_at": "2017-10-18 19:30:43"
+     *      }
+     *     }
+     *   }),
+     *   @SWG\Response(response=401, description="Unauthenticated", examples={
+     *     "application/json": {
+     *       "message"="Unauthenticated.",
+     *     }
+     *   }),
+     *   @SWG\Response(response=404, description="Not Found")
+     * )
+     */
+    public function getUser(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+        return $user;
     }
 }

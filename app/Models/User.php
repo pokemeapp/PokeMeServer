@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->hasMany('App\FriendRequest', 'target_id', 'id');
     }
 
+    public function fullName()
+    {
+        return $this->firstname . " " . $this->lastname;
+    }
+
     /**
      * @param $query
      * @param $search

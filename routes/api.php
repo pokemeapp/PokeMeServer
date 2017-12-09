@@ -11,31 +11,27 @@ Route::post('forgot_password', 'Auth\Api\ApiRegisterController@forgot_password')
  */
 Route::get('/user', 'AuthenticatedUserController@getCurrentUser');
 Route::put('/user', 'AuthenticatedUserController@update');
+Route::post('/user/add_device_token', 'AuthenticatedUserController@addDeviceToken');
 Route::get('/user/friend_requests', 'AuthenticatedUserController@getCurrentUserFriendRequests');
-Route::get('/user/friends', 'AuthenticatedUserController@getCurrentUserFriends');
 Route::post('/user/friend_requests/{id}/accept', 'AuthenticatedUserController@acceptFriendRequest');
 Route::post('/user/friend_requests/{id}/decline', 'AuthenticatedUserController@declineFriendRequest');
+Route::get('/user/friends', 'AuthenticatedUserController@getCurrentUserFriends');
+Route::delete('/user/friends/{friendId}', 'AuthenticatedUserController@deleteFriend');
 
-/**
- * Users routes
- */
-Route::get('/usersearch', 'UserController@searchUser');
-
-/*
- * Friend Request routes
- */
-Route::post('/user/friend_request', 'FriendRequestController@post');
+Route::get('/users/search', 'UserController@searchUser');
+Route::get('/users/{userId}', 'UserController@getUser');
+Route::post('/users/{userId}/send_request', 'FriendRequestController@post');
 
 /*
  * Poke routes
  */
 Route::get('/pokes/prototypes', 'PokeController@getPrototypes');
 Route::post('/pokes/prototypes', 'PokeController@postPrototype');
-Route::get('/pokes/prototypes/{id}', 'PokeController@getPrototype');
-Route::put('/pokes/prototypes/{id}', 'PokeController@putPrototype');
-Route::delete('/pokes/prototypes/{id}', 'PokeController@deletePrototype');
+Route::get('/pokes/prototypes/{prototypeId}', 'PokeController@getPrototype');
+Route::put('/pokes/prototypes/{prototypeId}', 'PokeController@putPrototype');
+Route::delete('/pokes/prototypes/{prototypeId}', 'PokeController@deletePrototype');
+Route::post('/pokes/prototypes/{prototypeId}/send','PokeController@postPokes');
 
-//Route::get('/pokes');
-//Route::post('/send_poke');
+Route::get('/pokes', 'PokeController@getPokes');
 
 
