@@ -32,6 +32,11 @@ Route::put('/pokes/prototypes/{prototypeId}', 'PokeController@putPrototype');
 Route::delete('/pokes/prototypes/{prototypeId}', 'PokeController@deletePrototype');
 Route::post('/pokes/prototypes/{prototypeId}/send','PokeController@postPokes');
 
-Route::get('/pokes', 'PokeController@getPokes');
+Route::get('/pokes/{friendId}', 'PokeController@getPokes');
+Route::post('/pokes/{pokeId}/response', 'PokeController@postPokeResponse');
 
+Route::get('/habits', 'HabitController@getHabits');
+Route::post('/habits', 'HabitController@postHabit');
+Route::post('/habits/{habitId}/reject', 'HabitController@rejectHabit');
+Route::post('/habits/{habitId}/done', 'HabitController@doneHabit');
 

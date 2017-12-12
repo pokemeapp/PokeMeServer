@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\DeviceToken;
+use App\Friend;
 use App\Poke;
 use App\PokePrototype;
 use App\User;
 use Bnb\PushNotifications\Device;
 use Bnb\PushNotifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -23,10 +25,11 @@ class PokeController extends ApiController
 
     /**
      * @SWG\Get(
-     *   path="/api/pokes",
-     *   summary="Get all poke for the current user.",
+     *   path="/api/pokes/{friendId}",
+     *   summary="Get all poke for the current user for a friend.",
      *   operationId="getPokes",
      *   tags={"pokes"},
+     *   @SWG\Parameter(name="friendId", in="path", type="number"),
      *   @SWG\Response(response=200, description="successful operation", examples={
      *     "application/json": {
      *        {
@@ -42,11 +45,128 @@ class PokeController extends ApiController
      *   })
      * )
      */
-    public function getPokes(Request $request)
+    public function getPokes(Request $request, $friendId)
     {
         $id = $request->user()->id;
-        $pokes = Poke::where("owner_id", $id)->orWhere("target_id", $id)->orderBy("created_at")->get();
+
+        /** @var Collection $friendship */
+        $friendship = Friend::where([
+            "user_id" => $id,
+            "friend_id" => $friendId
+        ])->get();
+        if ($friendship->isEmpty()) {
+            return \response()->json("The user is not your friend!", Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        $pokes = Poke::where(
+            [
+                "owner_id" => $id,
+                "target_id" => $friendId,
+            ]
+        )
+        ->orWhere(
+            [
+                "owner_id" => $friendId,
+                "target_id" => $id,
+            ]
+        )->orderBy("created_at")->get();
         return $pokes;
+    }
+
+    /**
+     * @SWG\Post(
+     *   path="/api/pokes/{pokeId}/response",
+     *   summary="Send a response for a poke.",
+     *   operationId="postPokeResponse",
+     *   tags={"pokes"},
+     *   @SWG\Parameter(name="pokeId", in="path", type="number"),
+     *   @SWG\Parameter(name="response", in="body", @SWG\Schema(type="string")),
+     *   @SWG\Response(response=200, description="successful operation")
+     * )
+     */
+    public function postPokeResponse(Request $request, $pokeId)
+    {
+        /** @var $validator \Illuminate\Validation\Validator */
+        $validator = Validator::make($request->all(), [
+            'response' => [
+                'required'
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return \response()->json($validator->errors(), Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        try {
+            $poke = Poke::findOrFail($pokeId);
+        } catch (ModelNotFoundException $exception) {
+            return \response()->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+
+        if ($request->user()->id != $poke->target_id) {
+            return \response()->json("You are not the target of that poke.", Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        $poke->response = $request->get("response");
+        $poke->save();
+
+        return $poke;
+    }
+
+    /**
+     * @SWG\Post(
+     *   path="/api/pokes/{pokeId}/response/yes",
+     *   summary="Send a yes response for a poke.",
+     *   operationId="postYesPokeResponse",
+     *   tags={"pokes"},
+     *   @SWG\Parameter(name="pokeId", in="path", type="number"),
+     *   @SWG\Response(response=200, description="successful operation")
+     * )
+     */
+    public function postYesPokeResponse(Request $request, $pokeId)
+    {
+        try {
+            $poke = Poke::findOrFail($pokeId);
+        } catch (ModelNotFoundException $exception) {
+            return \response()->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+
+        if ($request->user()->id != $poke->target_id) {
+            return \response()->json("You are not the target of that poke.", Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        $poke->response = 'Yes';
+        $poke->save();
+
+        return $poke;
+    }
+
+    /**
+     * @SWG\Post(
+     *   path="/api/pokes/{pokeId}/response/no",
+     *   summary="Send a no response for a poke.",
+     *   operationId="postNoPokeResponse",
+     *   tags={"pokes"},
+     *   @SWG\Parameter(name="pokeId", in="path", type="number"),
+     *   @SWG\Response(response=200, description="successful operation")
+     * )
+     */
+    public function postNoPokeResponse(Request $request, $pokeId)
+    {
+        try {
+            $poke = Poke::findOrFail($pokeId);
+        } catch (ModelNotFoundException $exception) {
+            return \response()->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+
+        if ($request->user()->id != $poke->target_id) {
+            return \response()->json("You are not the target of that poke.", Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        $poke->response = 'No';
+        $poke->save();
+
+        return $poke;
     }
 
     /**
@@ -239,10 +359,10 @@ class PokeController extends ApiController
         $poke->target_id = $request->get('target_id');
         $poke->save();
 
-        //TODO: Reafctor into EVENT
         $notification = new Notification($prototype->name, $prototype->message);
         $notification->metadata('prototype_id', $prototypeId);
-        $notification->metadata('target_id', $request->get('target_id'));
+        $notification->metadata('notification_type', "poke");
+        $notification->metadata('friend_id', $request->user()->id);
 
         /** @var DeviceToken $token */
         foreach ($targetDeviceTokens as $token) {
