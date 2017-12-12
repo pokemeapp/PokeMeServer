@@ -260,7 +260,6 @@ class PokeController extends ApiController
     {
         /** @var PokePrototype $prototype */
         $prototype = PokePrototype::findOrFail($id);
-        $prototype->validateOwnership($request->user()->id);
         return $prototype;
         
     }
