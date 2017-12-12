@@ -145,7 +145,7 @@ class HabitController extends ApiController
      *   summary="Reject a habit for 10 minutes.",
      *   operationId="rejectHabit",
      *   tags={"habits"},
-     *   @SWG\Parameter(name="habitId", in="path", @SWG\Schema(type="number")),
+     *   @SWG\Parameter(name="habitId", in="path", type="number"),
      *   @SWG\Response(response=200, description="successful operation")
      * )
      */
@@ -166,14 +166,16 @@ class HabitController extends ApiController
             $user = $request->user();
             $friends = Friend::where(["user_id" => $user->id])->get();
 
-            $notification = new Notification("New Friend Request", "You have a new Friend Request from " . $user->fullName());
-            $notification->metadata("notification_type", "habbitsnooze");
-            $notification->metadata("friend_id", $user->id);
+            $notification = new Notification("Habit snooze warning", "Hi! Your firend snoozed a habit 3 times! Check him out and poke! ");
+
             foreach ($friends as $friend) {
                 $targetDeviceTokens = DeviceToken::where("user_id", $friend->friend_id)->get();
                 /** @var DeviceToken $token */
                 foreach ($targetDeviceTokens as $token) {
-                    $notification->push(Device::apns($token->token));
+                    $device = Device::apns($token->token);
+                    $device->metadata("notification_type", "habbitsnooze");
+                    $device->metadata("friend_id", $user->id);
+                    $notification->push($device);
                 }
             }
             $results = $notification->send();
@@ -187,7 +189,7 @@ class HabitController extends ApiController
      *   summary="Done a habit.",
      *   operationId="doneHabit",
      *   tags={"habits"},
-     *   @SWG\Parameter(name="habitId", in="path", @SWG\Schema(type="number")),
+     *   @SWG\Parameter(name="habitId", in="path", type="number"),
      *   @SWG\Response(response=200, description="successful operation")
      * )
      */

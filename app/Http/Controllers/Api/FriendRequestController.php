@@ -105,13 +105,14 @@ class FriendRequestController extends ApiController
         Mail::to($target->email)->send(new FriendRequestSent());
 
         $notification = new Notification("New Friend Request", "You have a new Friend Request from " . $user->fullName());
-        $notification->metadata('friend_request_id', $friendRequest->id);
-        $notification->metadata('user_id', $user->id);
-        $notification->metadata('notification_type', "notification");
 
         /** @var DeviceToken $token */
         foreach ($targetDeviceTokens as $token) {
-            $notification->push(Device::apns($token->token));
+            $device = Device::apns($token->token);
+            $device->metadata('friend_request_id', $friendRequest->id);
+            $device->metadata('user_id', $user->id);
+            $device->metadata('notification_type', "notification");
+            $notification->push($device);
         }
         $results = $notification->send();
     }
