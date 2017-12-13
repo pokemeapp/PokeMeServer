@@ -162,23 +162,7 @@
 <section class="contact bg-primary" id="contact">
     <div class="container">
         <h2>Made with <i class="fa fa-heart"></i> !</h2>
-        <ul class="list-inline list-social">
-            <li class="list-inline-item social-twitter">
-                <a href="#">
-                    <i class="fa fa-twitter"></i>
-                </a>
-            </li>
-            <li class="list-inline-item social-facebook">
-                <a href="#">
-                    <i class="fa fa-facebook"></i>
-                </a>
-            </li>
-            <li class="list-inline-item social-google-plus">
-                <a href="#">
-                    <i class="fa fa-google-plus"></i>
-                </a>
-            </li>
-        </ul>
+        <h2>Sponsored by <a href="http://codeyard.eu/"><img src="/images/codeyard.png" style="width: 85px;" alt=""></a></h2>
     </div>
 </section>
 
