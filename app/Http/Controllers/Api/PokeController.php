@@ -110,6 +110,21 @@ class PokeController extends ApiController
         $poke->response = $request->get("response");
         $poke->save();
 
+        /** @var User $user */
+        $user = $request->user();
+        $targetUser = $poke->owner_id;
+        $targetDeviceTokens = DeviceToken::where("user_id", $targetUser)->get();
+        $notification = new Notification("New response for your poke", $user->fullName() . "responded for your poke with: " . $request->get('response'));
+
+        /** @var DeviceToken $token */
+        foreach ($targetDeviceTokens as $token) {
+            $device = Device::apns($token->token);
+            $device->metadata('notification_type', "poke");
+            $device->metadata('friend_id', $targetUser);
+            $notification->push($device);
+        }
+        $results = $notification->send();
+
         return $poke;
     }
 
